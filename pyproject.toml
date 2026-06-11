@@ -1,0 +1,26 @@
+[project]
+name = "stripe-support-agent"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "google-genai",
+    "voyageai",
+    "qdrant-client",
+    "httpx",
+    "pydantic>=2",
+    "pydantic-settings>=2",
+    "python-dotenv",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "ruff",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
