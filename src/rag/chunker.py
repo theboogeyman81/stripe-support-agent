@@ -37,11 +37,13 @@ def _segments(text: str) -> list[tuple[bool, str]]:
     return result
 
 
-def _split_prose(text: str, target: int) -> list[str]:
+def _split_prose(text: str, target: int, _seps: list[str] | None = None) -> list[str]:
     """Recursively split prose into atoms each ≤ target tokens."""
+    if _seps is None:
+        _seps = _SEPARATORS
     if count_tokens(text) <= target:
         return [text] if text.strip() else []
-    for sep in _SEPARATORS:
+    for i, sep in enumerate(_seps):
         if sep == "":
             return [text]
         if sep not in text:
@@ -50,7 +52,9 @@ def _split_prose(text: str, target: int) -> list[str]:
         atoms: list[str] = []
         for j, piece in enumerate(raw_pieces):
             rejoined = (piece + sep) if j < len(raw_pieces) - 1 else piece
-            atoms.extend(_split_prose(rejoined, target))
+            # Pass only the remaining separators so a re-attached suffix (e.g.
+            # "para\n\n") cannot match the same separator and recurse infinitely.
+            atoms.extend(_split_prose(rejoined, target, _seps[i + 1 :]))
         return atoms
     return [text]
 
