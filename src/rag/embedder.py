@@ -59,6 +59,11 @@ class VoyageEmbedder:
                 )
         raise RuntimeError("embed_batch: exhausted retries")  # unreachable
 
+    def embed_query(self, text: str) -> list[float]:
+        """Embed a single query string with input_type='query'."""
+        result = self._client.embed([text], model=MODEL, input_type="query")
+        return result.embeddings[0]
+
 
 def _load_embedded_ids(output_path: Path) -> set[str]:
     if not output_path.exists():

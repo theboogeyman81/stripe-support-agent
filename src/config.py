@@ -9,3 +9,4 @@ class Settings(BaseSettings):
     gemini_api_key: str
     voyage_api_key: str
     qdrant_url: str = "http://localhost:6333"
+    qdrant_api_key: str = ""
