@@ -10,3 +10,6 @@ class Settings(BaseSettings):
     voyage_api_key: str
     qdrant_url: str = "http://localhost:6333"
     qdrant_api_key: str = ""
+    api_host: str = "0.0.0.0"
+    api_port: int = 8000
+    admin_api_key: str = "changeme"
