@@ -77,6 +77,11 @@ class QdrantStore:
     def count(self) -> int:
         return self._client.count(self._collection).count
 
+    def ping(self) -> bool:
+        """Return True if Qdrant is reachable, raise on any failure."""
+        self._client.get_collections()
+        return True
+
 
 def ingest(
     chunks_path: Path,

@@ -334,3 +334,26 @@ def test_retrieve_uses_query_input_type(monkeypatch):
     mock_voyage_client.embed.assert_called_once()
     _, kwargs = mock_voyage_client.embed.call_args
     assert kwargs["input_type"] == "query"
+
+
+# ---------------------------------------------------------------------------
+# QdrantStore.ping
+# ---------------------------------------------------------------------------
+
+def test_ping_returns_true_when_client_succeeds():
+    mock_client = MagicMock()
+    store = _make_store(mock_client)
+
+    result = store.ping()
+
+    assert result is True
+    mock_client.get_collections.assert_called_once_with()
+
+
+def test_ping_raises_when_client_fails():
+    mock_client = MagicMock()
+    mock_client.get_collections.side_effect = Exception("connection refused")
+    store = _make_store(mock_client)
+
+    with pytest.raises(Exception, match="connection refused"):
+        store.ping()

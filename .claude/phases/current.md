@@ -4,14 +4,14 @@
 
 Active phase file: `.claude/phases/phase-2.md`
 
-Progress: 0 of 7 features complete.
+Progress: 5 of 7 features complete.
 
 - [x] 07 fastapi-skeleton
 - [x] 08 ask-endpoint
-- [ ] 09 ingest-endpoint        ← next
-- [ ] 10 health-endpoints
-- [ ] 11 structured-logging
-- [ ] 12 request-response-schemas
+- [x] 09 ingest-endpoint
+- [x] 10 health-endpoints
+- [x] 11 structured-logging
+- [ ] 12 request-response-schemas  ← next
 - [ ] 13 error-middleware
 
 When Phase 2 exits (all boxes checked and `LEARNINGS.md` has phase-2 notes),
