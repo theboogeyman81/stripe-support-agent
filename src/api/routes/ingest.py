@@ -1,25 +1,11 @@
 """POST /admin/ingest route — triggers the full ingestion pipeline."""
 
 from fastapi import APIRouter, Body, Depends, Header, HTTPException, Request
-from pydantic import BaseModel
 
+from src.api.schemas import IngestRequest, IngestResponse
 from src.ingest import run_ingest
 
 router = APIRouter(prefix="/admin")
-
-
-class IngestRequest(BaseModel):
-    recreate: bool = False
-
-
-class IngestResponse(BaseModel):
-    docs_loaded: int
-    chunks_produced: int
-    vectors_embedded: int
-    vectors_skipped: int
-    points_upserted: int
-    embed_cost_usd: float
-    cached_steps: list[str]
 
 
 def _check_admin_key(

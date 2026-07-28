@@ -1,30 +1,12 @@
 """POST /ask route — retrieves chunks and generates a Gemini answer."""
 
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, Field
 
+from src.api.schemas import AskRequest, AskResponse, SourceItem
 from src.rag.generator import generate
 from src.rag.vectorstore import retrieve
 
 router = APIRouter()
-
-
-class AskRequest(BaseModel):
-    question: str = Field(min_length=1)
-    top_k: int = Field(default=5, ge=1)
-
-
-class SourceItem(BaseModel):
-    title: str
-    url: str
-
-
-class AskResponse(BaseModel):
-    answer: str
-    sources: list[SourceItem]
-    input_tokens: int
-    output_tokens: int
-    cost_usd: float
 
 
 @router.post("/ask", response_model=AskResponse)
