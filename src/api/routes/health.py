@@ -2,24 +2,11 @@
 
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
 
+from src.api.schemas import HealthResponse
 from src.rag.vectorstore import COLLECTION, QdrantStore
 
 router = APIRouter()
-
-
-class HealthResponse(BaseModel):
-    status: str
-
-
-class ReadyCheck(BaseModel):
-    qdrant: str
-
-
-class ReadyResponse(BaseModel):
-    status: str
-    checks: ReadyCheck
 
 
 @router.get("/health", response_model=HealthResponse)
