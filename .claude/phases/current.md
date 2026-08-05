@@ -1,10 +1,25 @@
 # Current phase
 
-**Phase 2 — FastAPI wrapper + structured logging**
+**Phase 3 — Agent with tool use**
 
-Active phase file: `.claude/phases/phase-2.md`
+Active phase file: `.claude/phases/phase-3.md`
 
-Progress: 5 of 7 features complete.
+Progress: 0 of 8 features complete.
+
+- [ ] 14 agent-scaffold  ← next
+- [ ] 15 tool-search-docs
+- [ ] 16 tool-calculator
+- [ ] 17 tool-create-ticket
+- [ ] 18 tool-lookup-user
+- [ ] 19 agent-system-prompt
+- [ ] 20 multi-turn-state
+- [ ] 21 chat-endpoint
+
+---
+
+## Phase 2 — complete
+
+All 7 features shipped. `LEARNINGS.md` to be updated by human before closing out.
 
 - [x] 07 fastapi-skeleton
 - [x] 08 ask-endpoint
@@ -12,12 +27,7 @@ Progress: 5 of 7 features complete.
 - [x] 10 health-endpoints
 - [x] 11 structured-logging
 - [x] 12 request-response-schemas
-- [ ] 13 error-middleware  ← next
-
-
-
-When Phase 2 exits (all boxes checked and `LEARNINGS.md` has phase-2 notes),
-update this file to point at `phase-3.md` and reset the checklist.
+- [x] 13 error-middleware
 
 ---
 
