@@ -11,8 +11,10 @@ Progress: 5 of 7 features complete.
 - [x] 09 ingest-endpoint
 - [x] 10 health-endpoints
 - [x] 11 structured-logging
-- [ ] 12 request-response-schemas  ← next
-- [ ] 13 error-middleware
+- [x] 12 request-response-schemas
+- [ ] 13 error-middleware  ← next
+
+
 
 When Phase 2 exits (all boxes checked and `LEARNINGS.md` has phase-2 notes),
 update this file to point at `phase-3.md` and reset the checklist.

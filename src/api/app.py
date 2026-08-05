@@ -5,6 +5,7 @@ from typing import AsyncGenerator
 
 from fastapi import FastAPI
 
+from src.api.error_handlers import register_error_handlers
 from src.api.middleware import LoggingMiddleware
 from src.api.routes import ask as ask_routes
 from src.api.routes import health as health_routes
@@ -41,6 +42,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(ingest_routes.router)
     app.include_router(health_routes.router)
     app.add_middleware(LoggingMiddleware)
+    register_error_handlers(app)
 
     return app
 
