@@ -4,7 +4,7 @@ from pydantic_ai import Agent
 from pydantic_ai.models.google import GoogleModel
 from pydantic_ai.providers.google import GoogleProvider
 
-from src.agent.tools import calculate, search_docs
+from src.agent.tools import calculate, create_ticket, search_docs
 from src.config import Settings
 
 GEMINI_MODEL = "gemini-2.5-flash"
@@ -26,7 +26,7 @@ def create_agent(settings: Settings) -> Agent:
     return Agent(
         model,
         system_prompt=SYSTEM_PROMPT,
-        tools=[search_docs, calculate],
+        tools=[search_docs, calculate, create_ticket],
         deps_type=Settings,
     )
 

@@ -4,7 +4,7 @@ import pytest
 from unittest.mock import patch, MagicMock
 from pydantic_ai import RunContext
 
-from src.agent.tools import calculate, search_docs
+from src.agent.tools import calculate, create_ticket, search_docs
 
 _CHUNK = {
     "doc_title": "PaymentIntents",
@@ -109,3 +109,37 @@ def test_calculate_division_by_zero_raises():
 def test_calculate_invalid_syntax_raises():
     with pytest.raises(ValueError, match="invalid expression"):
         calculate(_ctx(), "2 +")
+
+
+# --- create_ticket tests ---
+
+
+def _ctx_with_postgres() -> MagicMock:
+    ctx = MagicMock()
+    ctx.deps.postgres_url = "postgresql://fake/db"
+    return ctx
+
+
+def _ctx_no_postgres() -> MagicMock:
+    ctx = MagicMock()
+    ctx.deps.postgres_url = ""
+    return ctx
+
+
+def test_create_ticket_returns_confirmation():
+    with patch("src.agent.tools.insert_ticket", return_value=1):
+        result = create_ticket(_ctx_with_postgres(), "billing", "I was double-charged")
+    assert result == "Ticket #1 created (category: billing)."
+
+
+def test_create_ticket_empty_url_raises():
+    with pytest.raises(ValueError, match="postgres_url is not configured"):
+        create_ticket(_ctx_no_postgres(), "billing", "Test")
+
+
+def test_create_ticket_passes_args_to_insert():
+    with patch("src.agent.tools.insert_ticket", return_value=5) as mock_insert:
+        create_ticket(_ctx_with_postgres(), "billing", "I was double-charged")
+    mock_insert.assert_called_once_with(
+        "postgresql://fake/db", "billing", "I was double-charged"
+    )

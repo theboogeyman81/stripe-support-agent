@@ -5,6 +5,7 @@ import ast
 from pydantic_ai import RunContext
 
 from src.config import Settings
+from src.db.tickets import insert_ticket
 from src.rag.vectorstore import retrieve
 
 _ALLOWED_OPS = (ast.Add, ast.Sub, ast.Mult, ast.Div, ast.Pow, ast.UAdd, ast.USub)
@@ -49,6 +50,14 @@ def calculate(ctx: RunContext[Settings], expression: str) -> str:
     if isinstance(result, float) and result.is_integer():
         return str(int(result))
     return str(result)
+
+
+def create_ticket(ctx: RunContext[Settings], category: str, summary: str) -> str:
+    """Create a support ticket in Postgres and return a confirmation string."""
+    if not ctx.deps.postgres_url:
+        raise ValueError("postgres_url is not configured")
+    ticket_id = insert_ticket(ctx.deps.postgres_url, category, summary)
+    return f"Ticket #{ticket_id} created (category: {category})."
 
 
 def search_docs(ctx: RunContext[Settings], query: str) -> str:

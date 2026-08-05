@@ -13,3 +13,4 @@ class Settings(BaseSettings):
     api_host: str = "0.0.0.0"
     api_port: int = 8000
     admin_api_key: str = "changeme"
+    postgres_url: str = ""
