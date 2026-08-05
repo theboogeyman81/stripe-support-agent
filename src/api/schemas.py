@@ -139,3 +139,15 @@ class ReadyResponse(BaseModel):
 
     status: str = Field(description="Overall readiness; 'ok' or 'degraded'")
     checks: ReadyCheck = Field(description="Per-dependency readiness breakdown")
+
+
+class ErrorResponse(BaseModel):
+    """Body returned for any unhandled server error."""
+
+    model_config = ConfigDict(
+        json_schema_extra={"example": {"detail": "internal server error"}}
+    )
+
+    detail: str = Field(
+        description="Human-readable error message, never a traceback"
+    )
