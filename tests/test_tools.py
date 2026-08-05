@@ -4,7 +4,7 @@ import pytest
 from unittest.mock import patch, MagicMock
 from pydantic_ai import RunContext
 
-from src.agent.tools import calculate, create_ticket, search_docs
+from src.agent.tools import calculate, create_ticket, lookup_user, search_docs
 
 _CHUNK = {
     "doc_title": "PaymentIntents",
@@ -143,3 +143,60 @@ def test_create_ticket_passes_args_to_insert():
     mock_insert.assert_called_once_with(
         "postgresql://fake/db", "billing", "I was double-charged"
     )
+
+
+# --- lookup_user tests ---
+
+_ALICE = {
+    "name": "Alice Johnson",
+    "email": "alice@example.com",
+    "plan": "Starter",
+    "status": "active",
+}
+
+_CAROL = {
+    "name": "Carol Chen",
+    "email": "carol@example.com",
+    "plan": "Enterprise",
+    "status": "suspended",
+}
+
+
+def _ctx_plain() -> MagicMock:
+    return MagicMock()
+
+
+def test_lookup_user_found():
+    with patch("src.agent.tools.MOCK_USERS", {"alice@example.com": _ALICE}):
+        result = lookup_user(_ctx_plain(), "alice@example.com")
+    assert "Alice Johnson" in result
+    assert "Starter" in result
+    assert "active" in result
+
+
+def test_lookup_user_not_found():
+    with patch("src.agent.tools.MOCK_USERS", {}):
+        result = lookup_user(_ctx_plain(), "unknown@example.com")
+    assert result == "No user found for email: unknown@example.com."
+
+
+def test_lookup_user_case_insensitive():
+    with patch("src.agent.tools.MOCK_USERS", {"alice@example.com": _ALICE}):
+        result = lookup_user(_ctx_plain(), "ALICE@EXAMPLE.COM")
+    assert "Alice Johnson" in result
+
+
+def test_lookup_user_empty_raises():
+    with pytest.raises(ValueError, match="email must not be empty"):
+        lookup_user(_ctx_plain(), "")
+
+
+def test_lookup_user_whitespace_raises():
+    with pytest.raises(ValueError, match="email must not be empty"):
+        lookup_user(_ctx_plain(), "   ")
+
+
+def test_lookup_user_suspended_status():
+    with patch("src.agent.tools.MOCK_USERS", {"carol@example.com": _CAROL}):
+        result = lookup_user(_ctx_plain(), "carol@example.com")
+    assert "suspended" in result

@@ -4,6 +4,7 @@ import ast
 
 from pydantic_ai import RunContext
 
+from src.agent.fixtures import MOCK_USERS
 from src.config import Settings
 from src.db.tickets import insert_ticket
 from src.rag.vectorstore import retrieve
@@ -58,6 +59,21 @@ def create_ticket(ctx: RunContext[Settings], category: str, summary: str) -> str
         raise ValueError("postgres_url is not configured")
     ticket_id = insert_ticket(ctx.deps.postgres_url, category, summary)
     return f"Ticket #{ticket_id} created (category: {category})."
+
+
+def lookup_user(ctx: RunContext[Settings], email: str) -> str:
+    """Look up a mock user by email and return their account details."""
+    if not email.strip():
+        raise ValueError("email must not be empty")
+    user = MOCK_USERS.get(email.strip().lower())
+    if user is None:
+        return f"No user found for email: {email}."
+    return (
+        f"User: {user['name']}\n"
+        f"Email: {user['email']}\n"
+        f"Plan: {user['plan']}\n"
+        f"Status: {user['status']}"
+    )
 
 
 def search_docs(ctx: RunContext[Settings], query: str) -> str:
