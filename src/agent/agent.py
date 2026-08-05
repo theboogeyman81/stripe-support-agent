@@ -4,6 +4,7 @@ from pydantic_ai import Agent
 from pydantic_ai.models.google import GoogleModel
 from pydantic_ai.providers.google import GoogleProvider
 
+from src.agent.tools import search_docs
 from src.config import Settings
 
 GEMINI_MODEL = "gemini-2.5-flash"
@@ -22,7 +23,9 @@ def create_agent(settings: Settings) -> Agent:
         GEMINI_MODEL,
         provider=GoogleProvider(api_key=settings.gemini_api_key),
     )
-    return Agent(model, system_prompt=SYSTEM_PROMPT)
+    return Agent(
+        model, system_prompt=SYSTEM_PROMPT, tools=[search_docs], deps_type=Settings
+    )
 
 
 def run_agent(question: str, settings: Settings) -> dict:
@@ -30,7 +33,7 @@ def run_agent(question: str, settings: Settings) -> dict:
     if not question.strip():
         raise ValueError("question must not be empty")
     agent = create_agent(settings)
-    result = agent.run_sync(question)
+    result = agent.run_sync(question, deps=settings)
     usage = result.usage
     input_tokens = usage.input_tokens or 0
     output_tokens = usage.output_tokens or 0
