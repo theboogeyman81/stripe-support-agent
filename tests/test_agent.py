@@ -28,7 +28,7 @@ def test_create_agent_returns_agent_instance():
 def test_run_agent_returns_all_keys():
     with patch("src.agent.agent.create_agent", return_value=_test_agent()):
         result = run_agent("What is a PaymentIntent?", _settings())
-    assert set(result.keys()) == {"answer", "input_tokens", "output_tokens", "cost_usd"}
+    assert set(result.keys()) == {"answer", "input_tokens", "output_tokens", "cost_usd", "message_history"}
 
 
 def test_run_agent_answer_is_string():
@@ -67,3 +67,23 @@ def test_system_prompt_mentions_lookup_user():
 
 def test_system_prompt_mentions_calculate():
     assert "calculate" in SYSTEM_PROMPT
+
+
+def test_run_agent_returns_message_history_key():
+    with patch("src.agent.agent.create_agent", return_value=_test_agent()):
+        result = run_agent("hello", _settings())
+    assert "message_history" in result
+    assert isinstance(result["message_history"], list)
+
+
+def test_run_agent_history_grows_on_second_turn():
+    with patch("src.agent.agent.create_agent", return_value=_test_agent()):
+        r1 = run_agent("hello", _settings())
+        r2 = run_agent("follow up", _settings(), message_history=r1["message_history"])
+    assert len(r2["message_history"]) > len(r1["message_history"])
+
+
+def test_run_agent_none_history_still_works():
+    with patch("src.agent.agent.create_agent", return_value=_test_agent()):
+        result = run_agent("hello", _settings(), message_history=None)
+    assert "message_history" in result
