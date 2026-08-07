@@ -141,6 +141,47 @@ class ReadyResponse(BaseModel):
     checks: ReadyCheck = Field(description="Per-dependency readiness breakdown")
 
 
+class ChatRequest(BaseModel):
+    """Body for POST /chat."""
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "session_id": None,
+                "question": "What is a PaymentIntent?",
+            }
+        }
+    )
+
+    session_id: str | None = Field(
+        default=None,
+        description="Conversation session id; omit to start a new session",
+    )
+    question: str = Field(min_length=1, description="User's message")
+
+
+class ChatResponse(BaseModel):
+    """Response from POST /chat."""
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "session_id": "3f2a1b4c-...",
+                "answer": "A PaymentIntent guides you through the payment process.",
+                "input_tokens": 400,
+                "output_tokens": 80,
+                "cost_usd": 0.0003,
+            }
+        }
+    )
+
+    session_id: str = Field(description="Session id to pass back on the next turn")
+    answer: str = Field(description="Agent's response")
+    input_tokens: int = Field(description="Tokens in the prompt sent to the LLM")
+    output_tokens: int = Field(description="Tokens in the LLM response")
+    cost_usd: float = Field(description="Estimated USD cost of the LLM call")
+
+
 class ErrorResponse(BaseModel):
     """Body returned for any unhandled server error."""
 
