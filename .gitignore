@@ -9,3 +9,4 @@ build/
 .ruff_cache/
 .env
 data/
+!data/golden_dataset.jsonl
