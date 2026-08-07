@@ -77,6 +77,7 @@ def run_agent(
         (input_tokens / 1_000_000) * INPUT_PRICE_PER_M
         + (output_tokens / 1_000_000) * OUTPUT_PRICE_PER_M
     )
+    trace_id: str | None = None
     client = get_langfuse_client(settings)
     if client:
         trace = client.start_observation(
@@ -85,6 +86,7 @@ def run_agent(
             input=question,
             **({"metadata": {"session_id": session_id}} if session_id else {}),
         )
+        trace_id = trace.trace_id
         trace.start_observation(
             name=GEMINI_MODEL,
             as_type="generation",
@@ -103,4 +105,5 @@ def run_agent(
         "output_tokens": output_tokens,
         "cost_usd": cost_usd,
         "message_history": ModelMessagesTypeAdapter.dump_python(result.all_messages()),
+        "trace_id": trace_id,
     }

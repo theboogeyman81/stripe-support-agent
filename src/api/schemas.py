@@ -180,6 +180,24 @@ class ChatResponse(BaseModel):
     input_tokens: int = Field(description="Tokens in the prompt sent to the LLM")
     output_tokens: int = Field(description="Tokens in the LLM response")
     cost_usd: float = Field(description="Estimated USD cost of the LLM call")
+    trace_id: str | None = Field(
+        default=None,
+        description="Langfuse trace ID; pass to POST /feedback to score this turn",
+    )
+
+
+class FeedbackRequest(BaseModel):
+    """Body for POST /feedback."""
+
+    trace_id: str = Field(description="Langfuse trace ID from POST /chat response")
+    value: int = Field(ge=0, le=1, description="1 = thumbs up, 0 = thumbs down")
+    comment: str | None = Field(default=None, description="Optional freetext comment")
+
+
+class FeedbackResponse(BaseModel):
+    """Response from POST /feedback."""
+
+    success: bool = Field(description="True if the score was submitted to Langfuse")
 
 
 class ErrorResponse(BaseModel):
