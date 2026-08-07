@@ -19,7 +19,9 @@ def chat(request: Request, body: ChatRequest) -> ChatResponse:
     history = _sessions.get(sid, [])
     settings = request.app.state.settings
     try:
-        result = run_agent(body.question, settings, message_history=history)
+        result = run_agent(
+            body.question, settings, message_history=history, session_id=sid
+        )
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"upstream error: {e}")
     _sessions[sid] = result["message_history"]

@@ -119,3 +119,29 @@ def test_run_agent_skips_tracing_when_client_absent():
     assert set(result.keys()) == {
         "answer", "input_tokens", "output_tokens", "cost_usd", "message_history"
     }
+
+
+def test_run_agent_passes_session_id_in_metadata():
+    mock_client = MagicMock()
+    mock_trace = MagicMock()
+    mock_client.start_observation.return_value = mock_trace
+
+    with patch("src.agent.agent.create_agent", return_value=_test_agent()), \
+         patch("src.agent.agent.get_langfuse_client", return_value=mock_client):
+        run_agent("question", _settings(), session_id="test-sid")
+
+    call_kwargs = mock_client.start_observation.call_args.kwargs
+    assert call_kwargs.get("metadata", {}).get("session_id") == "test-sid"
+
+
+def test_run_agent_omits_metadata_when_session_id_none():
+    mock_client = MagicMock()
+    mock_trace = MagicMock()
+    mock_client.start_observation.return_value = mock_trace
+
+    with patch("src.agent.agent.create_agent", return_value=_test_agent()), \
+         patch("src.agent.agent.get_langfuse_client", return_value=mock_client):
+        run_agent("question", _settings())
+
+    call_kwargs = mock_client.start_observation.call_args.kwargs
+    assert "metadata" not in call_kwargs
