@@ -1,20 +1,34 @@
 # Current phase
 
-**Phase 3 — Agent with tool use**
+**Phase 4 — Observability with Langfuse**
 
-Active phase file: `.claude/phases/phase-3.md`
+Active phase file: `.claude/phases/phase-4.md`
 
-Progress: 2 of 8 features complete.
+Progress: 3 of 7 features complete.
+
+- [x] 22 langfuse-selfhost
+- [x] 23 langfuse-sdk-integration
+- [x] 24 trace-llm-calls
+- [ ] 25 trace-tool-calls  ← next
+- [ ] 25 trace-tool-calls
+- [ ] 26 trace-retrieval
+- [ ] 27 session-grouping
+- [ ] 28 user-feedback
+
+---
+
+## Phase 3 — complete
+
+All 8 features shipped. `LEARNINGS.md` to be updated by human before closing out.
 
 - [x] 14 agent-scaffold
 - [x] 15 tool-search-docs
-- [ ] 16 tool-calculator  ← next
-- [ ] 16 tool-calculator
-- [ ] 17 tool-create-ticket
-- [ ] 18 tool-lookup-user
-- [ ] 19 agent-system-prompt
-- [ ] 20 multi-turn-state
-- [ ] 21 chat-endpoint
+- [x] 16 tool-calculator
+- [x] 17 tool-create-ticket
+- [x] 18 tool-lookup-user
+- [x] 19 agent-system-prompt
+- [x] 20 multi-turn-state
+- [x] 21 chat-endpoint
 
 ---
 

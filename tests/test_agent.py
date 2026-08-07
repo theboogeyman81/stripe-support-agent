@@ -1,7 +1,7 @@
 """Tests for src/agent/agent.py — all external calls mocked via Agent('test')."""
 
 import pytest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 from pydantic_ai import Agent
 
 from src.agent.agent import SYSTEM_PROMPT, create_agent, run_agent
@@ -87,3 +87,35 @@ def test_run_agent_none_history_still_works():
     with patch("src.agent.agent.create_agent", return_value=_test_agent()):
         result = run_agent("hello", _settings(), message_history=None)
     assert "message_history" in result
+
+
+def test_run_agent_creates_langfuse_trace_when_client_present():
+    mock_client = MagicMock()
+    mock_trace = MagicMock()
+    mock_client.start_observation.return_value = mock_trace
+
+    with patch("src.agent.agent.create_agent", return_value=_test_agent()), \
+         patch("src.agent.agent.get_langfuse_client", return_value=mock_client):
+        run_agent("What is a PaymentIntent?", _settings())
+
+    mock_client.start_observation.assert_called_once_with(
+        name="stripe-support-chat", as_type="span", input="What is a PaymentIntent?"
+    )
+    mock_trace.start_observation.assert_called_once()
+    call_kwargs = mock_trace.start_observation.call_args.kwargs
+    assert call_kwargs["as_type"] == "generation"
+    assert call_kwargs["model"] == "gemini-2.5-flash"
+    mock_client.flush.assert_called_once()
+
+
+def test_run_agent_skips_tracing_when_client_absent():
+    mock_client = MagicMock()
+
+    with patch("src.agent.agent.create_agent", return_value=_test_agent()), \
+         patch("src.agent.agent.get_langfuse_client", return_value=None):
+        result = run_agent("What is a PaymentIntent?", _settings())
+
+    mock_client.start_observation.assert_not_called()
+    assert set(result.keys()) == {
+        "answer", "input_tokens", "output_tokens", "cost_usd", "message_history"
+    }
