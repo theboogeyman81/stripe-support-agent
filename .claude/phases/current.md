@@ -4,10 +4,11 @@
 
 Active phase file: `.claude/phases/phase-3.md`
 
-Progress: 1 of 8 features complete.
+Progress: 2 of 8 features complete.
 
 - [x] 14 agent-scaffold
-- [ ] 15 tool-search-docs  ← next
+- [x] 15 tool-search-docs
+- [ ] 16 tool-calculator  ← next
 - [ ] 16 tool-calculator
 - [ ] 17 tool-create-ticket
 - [ ] 18 tool-lookup-user
