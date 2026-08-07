@@ -12,6 +12,7 @@ from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, PointStruct, VectorParams
 
 from src.config import Settings
+from src.observability.langfuse_client import get_langfuse_client
 from src.rag.embedder import VoyageEmbedder
 
 log = logging.getLogger(__name__)
@@ -182,7 +183,27 @@ def retrieve(query: str, top_k: int = 5) -> list[dict]:
         collection=COLLECTION,
         api_key=settings.qdrant_api_key,
     )
-    return store.search(query_vector, top_k=top_k)
+    client = get_langfuse_client(settings)
+    span = (
+        client.start_observation(
+            name="retrieve",
+            as_type="span",
+            input={"query": query, "top_k": top_k},
+        )
+        if client else None
+    )
+    try:
+        results = store.search(query_vector, top_k=top_k)
+        if span:
+            span.update(output={
+                "result_count": len(results),
+                "scores": [r["score"] for r in results],
+                "titles": [r["doc_title"] for r in results],
+            })
+        return results
+    finally:
+        if span:
+            span.end()
 
 
 if __name__ == "__main__":

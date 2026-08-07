@@ -326,6 +326,8 @@ def test_retrieve_uses_query_input_type(monkeypatch):
             voyage_api_key="vk",
             qdrant_url="http://localhost:6333",
             qdrant_api_key="",
+            langfuse_public_key="",
+            langfuse_secret_key="",
         ),
     )
 
@@ -357,3 +359,54 @@ def test_ping_raises_when_client_fails():
 
     with pytest.raises(Exception, match="connection refused"):
         store.ping()
+
+
+# ---------------------------------------------------------------------------
+# retrieve() — tracing
+# ---------------------------------------------------------------------------
+
+def _mock_retrieve_env(monkeypatch, langfuse_client) -> MagicMock:
+    """Patch all external deps for retrieve(); return the mock Qdrant client."""
+    mock_voyage = MagicMock()
+    mock_voyage.embed.return_value = MagicMock(embeddings=[[0.1] * VECTOR_SIZE])
+    mock_qdrant = MagicMock()
+    mock_qdrant.collection_exists.return_value = True
+    mock_qdrant.query_points.return_value = MagicMock(points=[])
+    monkeypatch.setattr("src.rag.vectorstore.voyageai.Client", lambda **_: mock_voyage)
+    monkeypatch.setattr("src.rag.vectorstore.QdrantClient", lambda **_: mock_qdrant)
+    monkeypatch.setattr(
+        "src.rag.vectorstore.Settings",
+        lambda: MagicMock(
+            voyage_api_key="vk",
+            qdrant_url="http://localhost:6333",
+            qdrant_api_key="",
+            langfuse_public_key="",
+            langfuse_secret_key="",
+        ),
+    )
+    monkeypatch.setattr(
+        "src.rag.vectorstore.get_langfuse_client", lambda _: langfuse_client
+    )
+    return mock_qdrant
+
+
+def test_retrieve_creates_langfuse_span(monkeypatch):
+    mock_client = MagicMock()
+    mock_span = MagicMock()
+    mock_client.start_observation.return_value = mock_span
+    _mock_retrieve_env(monkeypatch, mock_client)
+
+    retrieve("how do I refund?")
+
+    mock_client.start_observation.assert_called_once_with(
+        name="retrieve",
+        as_type="span",
+        input={"query": "how do I refund?", "top_k": 5},
+    )
+    mock_span.end.assert_called_once()
+
+
+def test_retrieve_skips_span_when_client_absent(monkeypatch):
+    _mock_retrieve_env(monkeypatch, None)
+    results = retrieve("how do I refund?")
+    assert isinstance(results, list)

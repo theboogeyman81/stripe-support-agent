@@ -4,16 +4,14 @@
 
 Active phase file: `.claude/phases/phase-4.md`
 
-Progress: 4 of 7 features complete.
+Progress: 5 of 7 features complete.
 
 - [x] 22 langfuse-selfhost
 - [x] 23 langfuse-sdk-integration
 - [x] 24 trace-llm-calls
 - [x] 25 trace-tool-calls
-- [ ] 26 trace-retrieval  ← next
-- [ ] 25 trace-tool-calls
-- [ ] 26 trace-retrieval
-- [ ] 27 session-grouping
+- [x] 26 trace-retrieval
+- [ ] 27 session-grouping  ← next
 - [ ] 28 user-feedback
 
 ---
