@@ -4,7 +4,7 @@ import pytest
 from unittest.mock import patch
 from pydantic_ai import Agent
 
-from src.agent.agent import create_agent, run_agent
+from src.agent.agent import SYSTEM_PROMPT, create_agent, run_agent
 from src.config import Settings
 
 
@@ -51,3 +51,19 @@ def test_run_agent_empty_question_raises():
 def test_run_agent_whitespace_only_raises():
     with pytest.raises(ValueError, match="question must not be empty"):
         run_agent("   ", _settings())
+
+
+def test_system_prompt_mentions_search_docs():
+    assert "search_docs" in SYSTEM_PROMPT
+
+
+def test_system_prompt_mentions_create_ticket():
+    assert "create_ticket" in SYSTEM_PROMPT
+
+
+def test_system_prompt_mentions_lookup_user():
+    assert "lookup_user" in SYSTEM_PROMPT
+
+
+def test_system_prompt_mentions_calculate():
+    assert "calculate" in SYSTEM_PROMPT
