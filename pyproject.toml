@@ -27,6 +27,11 @@ dev = [
     "ruff",
 ]
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--ignore=tests/eval"
+markers = ["eval: threshold checks against eval result files"]
+
 [tool.ruff]
 line-length = 88
 target-version = "py311"

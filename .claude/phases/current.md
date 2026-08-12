@@ -11,8 +11,6 @@ Progress: 4 of 7 features complete.
 - [x] 31 llm-as-judge
 - [x] 32 retrieval-eval
 - [ ] 33 pytest-eval-suite  ← next
-- [ ] 32 retrieval-eval
-- [ ] 33 pytest-eval-suite
 - [ ] 34 nightly-eval-job
 - [ ] 35 regression-detection
 
