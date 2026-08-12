@@ -1,10 +1,24 @@
 # Current phase
 
-**Phase 4 — Observability with Langfuse**
+**Phase 5 — Evaluation pipeline**
 
-Active phase file: `.claude/phases/phase-4.md`
+Active phase file: `.claude/phases/phase-5.md`
 
-Progress: 6 of 7 features complete.
+Progress: 3 of 7 features complete.
+
+- [x] 29 golden-dataset
+- [x] 30 ragas-integration
+- [x] 31 llm-as-judge
+- [ ] 32 retrieval-eval  ← next
+- [ ] 32 retrieval-eval
+- [ ] 33 pytest-eval-suite
+- [ ] 34 nightly-eval-job
+- [ ] 35 regression-detection
+
+---
+## Phase 4 — complete
+
+All 7 features shipped. `LEARNINGS.md` to be updated by human before closing out.
 
 - [x] 22 langfuse-selfhost
 - [x] 23 langfuse-sdk-integration
@@ -12,7 +26,7 @@ Progress: 6 of 7 features complete.
 - [x] 25 trace-tool-calls
 - [x] 26 trace-retrieval
 - [x] 27 session-grouping
-- [ ] 28 user-feedback  ← next
+- [x] 28 user-feedback
 
 ---
 
