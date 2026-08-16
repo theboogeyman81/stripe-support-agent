@@ -1,6 +1,7 @@
 """Pydantic AI agent wired to Gemini 2.5 Flash for Stripe support questions."""
 
 from pydantic_ai import Agent
+from pydantic_ai.messages import ModelMessagesTypeAdapter
 from pydantic_ai.models.google import GoogleModel
 from pydantic_ai.providers.google import GoogleProvider
 
@@ -51,12 +52,21 @@ def create_agent(settings: Settings) -> Agent:
     )
 
 
-def run_agent(question: str, settings: Settings) -> dict:
-    """Run the agent on a question and return answer, token counts, and cost."""
+def run_agent(
+    question: str,
+    settings: Settings,
+    message_history: list[dict] | None = None,
+) -> dict:
+    """Run the agent on a question; return answer, tokens, cost, and history."""
     if not question.strip():
         raise ValueError("question must not be empty")
     agent = create_agent(settings)
-    result = agent.run_sync(question, deps=settings)
+    history = (
+        ModelMessagesTypeAdapter.validate_python(message_history)
+        if message_history
+        else None
+    )
+    result = agent.run_sync(question, deps=settings, message_history=history)
     usage = result.usage
     input_tokens = usage.input_tokens or 0
     output_tokens = usage.output_tokens or 0
@@ -69,4 +79,5 @@ def run_agent(question: str, settings: Settings) -> dict:
         "input_tokens": input_tokens,
         "output_tokens": output_tokens,
         "cost_usd": cost_usd,
+        "message_history": ModelMessagesTypeAdapter.dump_python(result.all_messages()),
     }
