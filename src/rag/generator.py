@@ -1,7 +1,9 @@
 """Generator: calls Gemini to produce a grounded answer from retrieved chunks."""
 
+import redis as redis_lib
 from google import genai
 
+from src.cache.exact_match import cache_key, get_cached, set_cached
 from src.config import Settings
 
 GEMINI_MODEL = "gemini-2.5-flash"
@@ -33,16 +35,31 @@ def build_prompt(question: str, chunks: list[dict]) -> str:
     )
 
 
-def generate(question: str, chunks: list[dict]) -> dict:
+def generate(
+    question: str,
+    chunks: list[dict],
+    redis_client: redis_lib.Redis | None = None,
+    cache_ttl: int = 3600,
+) -> dict:
     """Call Gemini with the RAG prompt and return answer, token counts, and cost."""
     if not question.strip():
         raise ValueError("question must not be empty")
     if not chunks:
         raise ValueError("chunks must not be empty")
 
+    prompt = build_prompt(question, chunks)
+
+    # Cache lookup
+    key: str | None = None
+    if redis_client is not None:
+        key = cache_key(GEMINI_MODEL, prompt)
+        hit = get_cached(redis_client, key)
+        if hit is not None:
+            return {**hit, "cache_hit": True}
+
+    # Gemini call
     settings = Settings()
     client = genai.Client(api_key=settings.gemini_api_key)
-    prompt = build_prompt(question, chunks)
     response = client.models.generate_content(model=GEMINI_MODEL, contents=prompt)
 
     answer = response.text.strip()
@@ -53,9 +70,16 @@ def generate(question: str, chunks: list[dict]) -> dict:
         + (output_tokens / 1_000_000) * OUTPUT_PRICE_PER_M
     )
 
-    return {
+    result = {
         "answer": answer,
         "input_tokens": input_tokens,
         "output_tokens": output_tokens,
         "cost_usd": cost_usd,
+        "cache_hit": False,
     }
+
+    # Cache write
+    if key is not None:
+        set_cached(redis_client, key, result, cache_ttl)
+
+    return result

@@ -11,16 +11,19 @@ def _make_mock_settings() -> MagicMock:
     mock = MagicMock()
     mock.qdrant_url = "http://localhost:6333"
     mock.qdrant_api_key = ""
+    mock.redis_url = ""
     return mock
 
 
 def test_health_returns_200_with_ok_status() -> None:
-    """GET /health must always return 200 with {"status": "ok"}."""
+    """GET /health must always return 200 with status ok and a redis field."""
     app = create_app(settings=_make_mock_settings())
     with TestClient(app) as client:
         response = client.get("/health")
     assert response.status_code == 200
-    assert response.json() == {"status": "ok"}
+    body = response.json()
+    assert body["status"] == "ok"
+    assert "redis" in body
 
 
 def test_ready_returns_200_when_qdrant_reachable() -> None:
