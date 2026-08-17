@@ -14,3 +14,6 @@ class Settings(BaseSettings):
     api_port: int = 8000
     admin_api_key: str = "changeme"
     postgres_url: str = ""
+    langfuse_public_key: str = ""
+    langfuse_secret_key: str = ""
+    langfuse_host: str = "https://cloud.langfuse.com"
