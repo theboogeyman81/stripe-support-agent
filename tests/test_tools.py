@@ -2,7 +2,6 @@
 
 import pytest
 from unittest.mock import patch, MagicMock
-from pydantic_ai import RunContext
 
 from src.agent.tools import calculate, create_ticket, lookup_user, search_docs
 
@@ -20,7 +19,10 @@ _CHUNK_2 = {
 
 
 def _ctx() -> MagicMock:
-    return MagicMock(spec=RunContext)
+    ctx = MagicMock()
+    ctx.deps.langfuse_public_key = ""
+    ctx.deps.langfuse_secret_key = ""
+    return ctx
 
 
 def test_search_docs_formats_single_chunk():
@@ -117,12 +119,16 @@ def test_calculate_invalid_syntax_raises():
 def _ctx_with_postgres() -> MagicMock:
     ctx = MagicMock()
     ctx.deps.postgres_url = "postgresql://fake/db"
+    ctx.deps.langfuse_public_key = ""
+    ctx.deps.langfuse_secret_key = ""
     return ctx
 
 
 def _ctx_no_postgres() -> MagicMock:
     ctx = MagicMock()
     ctx.deps.postgres_url = ""
+    ctx.deps.langfuse_public_key = ""
+    ctx.deps.langfuse_secret_key = ""
     return ctx
 
 
@@ -163,7 +169,10 @@ _CAROL = {
 
 
 def _ctx_plain() -> MagicMock:
-    return MagicMock()
+    ctx = MagicMock()
+    ctx.deps.langfuse_public_key = ""
+    ctx.deps.langfuse_secret_key = ""
+    return ctx
 
 
 def test_lookup_user_found():
@@ -200,3 +209,65 @@ def test_lookup_user_suspended_status():
     with patch("src.agent.tools.MOCK_USERS", {"carol@example.com": _CAROL}):
         result = lookup_user(_ctx_plain(), "carol@example.com")
     assert "suspended" in result
+
+
+# --- tracing tests ---
+
+
+def test_search_docs_creates_span():
+    mock_client = MagicMock()
+    mock_span = MagicMock()
+    mock_client.start_observation.return_value = mock_span
+    with patch("src.agent.tools.get_langfuse_client", return_value=mock_client), \
+         patch("src.agent.tools.retrieve", return_value=[]):
+        search_docs(_ctx(), "PaymentIntent")
+    mock_client.start_observation.assert_called_once_with(
+        name="search_docs", as_type="span", input={"query": "PaymentIntent"}
+    )
+    mock_span.end.assert_called_once()
+
+
+def test_calculate_creates_span():
+    mock_client = MagicMock()
+    mock_span = MagicMock()
+    mock_client.start_observation.return_value = mock_span
+    with patch("src.agent.tools.get_langfuse_client", return_value=mock_client):
+        calculate(_ctx(), "2 + 3")
+    mock_client.start_observation.assert_called_once_with(
+        name="calculate", as_type="span", input={"expression": "2 + 3"}
+    )
+    mock_span.end.assert_called_once()
+
+
+def test_create_ticket_creates_span():
+    mock_client = MagicMock()
+    mock_span = MagicMock()
+    mock_client.start_observation.return_value = mock_span
+    with patch("src.agent.tools.get_langfuse_client", return_value=mock_client), \
+         patch("src.agent.tools.insert_ticket", return_value=1):
+        create_ticket(_ctx_with_postgres(), "billing", "double charge")
+    mock_client.start_observation.assert_called_once_with(
+        name="create_ticket", as_type="span",
+        input={"category": "billing", "summary": "double charge"}
+    )
+    mock_span.end.assert_called_once()
+
+
+def test_lookup_user_creates_span():
+    mock_client = MagicMock()
+    mock_span = MagicMock()
+    mock_client.start_observation.return_value = mock_span
+    with patch("src.agent.tools.get_langfuse_client", return_value=mock_client), \
+         patch("src.agent.tools.MOCK_USERS", {}):
+        lookup_user(_ctx_plain(), "test@example.com")
+    mock_client.start_observation.assert_called_once_with(
+        name="lookup_user", as_type="span", input={"email": "test@example.com"}
+    )
+    mock_span.end.assert_called_once()
+
+
+def test_search_docs_skips_span_when_client_absent():
+    with patch("src.agent.tools.get_langfuse_client", return_value=None), \
+         patch("src.agent.tools.retrieve", return_value=[]):
+        result = search_docs(_ctx(), "PaymentIntent")
+    assert result == "No relevant documentation found."
