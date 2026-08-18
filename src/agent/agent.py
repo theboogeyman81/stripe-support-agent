@@ -7,6 +7,7 @@ from pydantic_ai.providers.google import GoogleProvider
 
 from src.agent.tools import calculate, create_ticket, lookup_user, search_docs
 from src.config import Settings
+from src.observability.langfuse_client import get_langfuse_client
 
 GEMINI_MODEL = "gemini-2.5-flash"
 INPUT_PRICE_PER_M = 0.30  # USD per 1M input tokens
@@ -70,12 +71,30 @@ def run_agent(
     usage = result.usage
     input_tokens = usage.input_tokens or 0
     output_tokens = usage.output_tokens or 0
+    answer = result.output
     cost_usd = (
         (input_tokens / 1_000_000) * INPUT_PRICE_PER_M
         + (output_tokens / 1_000_000) * OUTPUT_PRICE_PER_M
     )
+    client = get_langfuse_client(settings)
+    if client:
+        trace = client.start_observation(
+            name="stripe-support-chat", as_type="span", input=question
+        )
+        trace.start_observation(
+            name=GEMINI_MODEL,
+            as_type="generation",
+            model=GEMINI_MODEL,
+            input=question,
+            output=answer,
+            usage_details={"input": input_tokens, "output": output_tokens},
+            cost_details={"total": cost_usd},
+        ).end()
+        trace.update(output=answer)
+        trace.end()
+        client.flush()
     return {
-        "answer": result.output,
+        "answer": answer,
         "input_tokens": input_tokens,
         "output_tokens": output_tokens,
         "cost_usd": cost_usd,
