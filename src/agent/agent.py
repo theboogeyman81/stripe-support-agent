@@ -57,6 +57,7 @@ def run_agent(
     question: str,
     settings: Settings,
     message_history: list[dict] | None = None,
+    session_id: str | None = None,
 ) -> dict:
     """Run the agent on a question; return answer, tokens, cost, and history."""
     if not question.strip():
@@ -79,7 +80,10 @@ def run_agent(
     client = get_langfuse_client(settings)
     if client:
         trace = client.start_observation(
-            name="stripe-support-chat", as_type="span", input=question
+            name="stripe-support-chat",
+            as_type="span",
+            input=question,
+            **({"metadata": {"session_id": session_id}} if session_id else {}),
         )
         trace.start_observation(
             name=GEMINI_MODEL,

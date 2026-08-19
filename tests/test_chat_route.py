@@ -108,3 +108,17 @@ def test_chat_unknown_session_id_starts_new_session() -> None:
             )
     assert response.status_code == 200
     assert response.json()["session_id"] != "nonexistent-id"
+
+
+def test_chat_passes_session_id_to_run_agent() -> None:
+    """The route must forward the session_id to run_agent as a keyword argument."""
+    app = create_app(settings=_make_mock_settings())
+    sessions: dict = {}
+    with patch("src.api.routes.chat._sessions", sessions), \
+         patch("src.api.routes.chat.run_agent", return_value=_SAMPLE_RESULT) as mock_run:
+        with TestClient(app) as client:
+            r1 = client.post("/chat", json={"question": "hello"})
+            sid = r1.json()["session_id"]
+            client.post("/chat", json={"session_id": sid, "question": "follow up"})
+    _, second_call_kwargs = mock_run.call_args_list[1]
+    assert second_call_kwargs["session_id"] == sid
