@@ -31,4 +31,5 @@ def chat(request: Request, body: ChatRequest) -> ChatResponse:
         input_tokens=result["input_tokens"],
         output_tokens=result["output_tokens"],
         cost_usd=result["cost_usd"],
+        trace_id=result.get("trace_id"),
     )

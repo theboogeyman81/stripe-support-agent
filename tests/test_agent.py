@@ -28,7 +28,9 @@ def test_create_agent_returns_agent_instance():
 def test_run_agent_returns_all_keys():
     with patch("src.agent.agent.create_agent", return_value=_test_agent()):
         result = run_agent("What is a PaymentIntent?", _settings())
-    assert set(result.keys()) == {"answer", "input_tokens", "output_tokens", "cost_usd", "message_history"}
+    assert set(result.keys()) == {
+        "answer", "input_tokens", "output_tokens", "cost_usd", "message_history", "trace_id"
+    }
 
 
 def test_run_agent_answer_is_string():
@@ -117,7 +119,7 @@ def test_run_agent_skips_tracing_when_client_absent():
 
     mock_client.start_observation.assert_not_called()
     assert set(result.keys()) == {
-        "answer", "input_tokens", "output_tokens", "cost_usd", "message_history"
+        "answer", "input_tokens", "output_tokens", "cost_usd", "message_history", "trace_id"
     }
 
 
@@ -132,6 +134,27 @@ def test_run_agent_passes_session_id_in_metadata():
 
     call_kwargs = mock_client.start_observation.call_args.kwargs
     assert call_kwargs.get("metadata", {}).get("session_id") == "test-sid"
+
+
+def test_run_agent_returns_trace_id_when_client_present():
+    mock_client = MagicMock()
+    mock_trace = MagicMock()
+    mock_trace.trace_id = "abc-123"
+    mock_client.start_observation.return_value = mock_trace
+
+    with patch("src.agent.agent.create_agent", return_value=_test_agent()), \
+         patch("src.agent.agent.get_langfuse_client", return_value=mock_client):
+        result = run_agent("question", _settings())
+
+    assert result["trace_id"] == "abc-123"
+
+
+def test_run_agent_trace_id_is_none_when_client_absent():
+    with patch("src.agent.agent.create_agent", return_value=_test_agent()), \
+         patch("src.agent.agent.get_langfuse_client", return_value=None):
+        result = run_agent("question", _settings())
+
+    assert result["trace_id"] is None
 
 
 def test_run_agent_omits_metadata_when_session_id_none():
