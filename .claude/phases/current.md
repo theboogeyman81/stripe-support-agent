@@ -4,7 +4,7 @@
 
 Active phase file: `.claude/phases/phase-5.md`
 
-Progress: 6 of 7 features complete.
+Progress: 7 of 7 features complete. Phase 5 done.
 
 - [x] 29 golden-dataset
 - [x] 30 ragas-integration
@@ -12,7 +12,7 @@ Progress: 6 of 7 features complete.
 - [x] 32 retrieval-eval
 - [x] 33 pytest-eval-suite
 - [x] 34 nightly-eval-job
-- [ ] 35 regression-detection  ← next
+- [x] 35 regression-detection
 - [ ] 34 nightly-eval-job
 - [ ] 35 regression-detection
 

@@ -34,6 +34,10 @@ jobs:
       - name: Enforce thresholds
         run: uv run pytest tests/eval/ -v
 
+      - name: Check for regressions
+        if: always()
+        run: uv run python -m scripts.check_regression
+
       - name: Write job summary
         if: always()
         run: uv run python -m scripts.write_eval_summary >> $GITHUB_STEP_SUMMARY
