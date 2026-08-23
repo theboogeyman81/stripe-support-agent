@@ -1,0 +1,49 @@
+name: Nightly Eval
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    env:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      VOYAGE_API_KEY: ${{ secrets.VOYAGE_API_KEY }}
+      QDRANT_URL:     ${{ secrets.QDRANT_URL }}
+      QDRANT_API_KEY: ${{ secrets.QDRANT_API_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v4
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run retrieval eval
+        run: uv run python -m scripts.run_retrieval_eval
+
+      - name: Run Ragas eval
+        run: uv run python -m scripts.run_ragas_eval --yes
+
+      - name: Run judge eval
+        run: uv run python -m scripts.run_judge_eval --yes
+
+      - name: Enforce thresholds
+        run: uv run pytest tests/eval/ -v
+
+      - name: Write job summary
+        if: always()
+        run: uv run python -m scripts.write_eval_summary >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload eval results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-results-${{ github.run_id }}
+          path: |
+            data/retrieval_results.json
+            data/ragas_results.json
+            data/judge_results.json

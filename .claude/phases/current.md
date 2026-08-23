@@ -4,13 +4,15 @@
 
 Active phase file: `.claude/phases/phase-5.md`
 
-Progress: 4 of 7 features complete.
+Progress: 6 of 7 features complete.
 
 - [x] 29 golden-dataset
 - [x] 30 ragas-integration
 - [x] 31 llm-as-judge
 - [x] 32 retrieval-eval
-- [ ] 33 pytest-eval-suite  ← next
+- [x] 33 pytest-eval-suite
+- [x] 34 nightly-eval-job
+- [ ] 35 regression-detection  ← next
 - [ ] 34 nightly-eval-job
 - [ ] 35 regression-detection
 
