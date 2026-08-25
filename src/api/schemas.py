@@ -49,6 +49,7 @@ class AskResponse(BaseModel):
                 "input_tokens": 1024,
                 "output_tokens": 128,
                 "cost_usd": 0.000312,
+                "cache_hit": False,
             }
         }
     )
@@ -62,6 +63,7 @@ class AskResponse(BaseModel):
     input_tokens: int = Field(description="Tokens in the prompt sent to the LLM")
     output_tokens: int = Field(description="Tokens in the LLM response")
     cost_usd: float = Field(description="Estimated USD cost of the LLM call")
+    cache_hit: bool = Field(False, description="True if answer was served from cache")
 
 
 class IngestRequest(BaseModel):
@@ -113,10 +115,41 @@ class HealthResponse(BaseModel):
     """Response from GET /health."""
 
     model_config = ConfigDict(
-        json_schema_extra={"example": {"status": "ok"}}
+        json_schema_extra={"example": {"status": "ok", "redis": "ok"}}
     )
 
     status: str = Field(description="Liveness status; 'ok' if the process is running")
+    redis: str | None = Field(None, description="Redis status; 'ok' or 'error: <msg>'")
+
+
+class TokenStats(BaseModel):
+    """Lifetime token and cost totals across all /ask requests."""
+
+    total_input: int = Field(description="Cumulative prompt tokens")
+    total_output: int = Field(description="Cumulative response tokens")
+    total_cost_usd: float = Field(description="Cumulative estimated spend in USD")
+    total_requests: int = Field(description="Total /ask requests recorded")
+
+
+class CacheTypeMetrics(BaseModel):
+    """Hit/miss counts for one cache layer."""
+
+    hits: int = Field(description="Number of cache hits")
+    misses: int = Field(description="Number of cache misses")
+    hit_rate: float = Field(
+        description="hits / (hits + misses); 0.0 if no requests yet"
+    )
+
+
+class MetricsResponse(BaseModel):
+    """Response from GET /metrics."""
+
+    semantic: CacheTypeMetrics = Field(description="Semantic cache counters")
+    exact: CacheTypeMetrics = Field(description="Exact-match cache counters")
+    total_requests: int = Field(
+        description="All /ask calls that had cache active"
+    )
+    tokens: TokenStats = Field(description="Lifetime token and cost totals")
 
 
 class ReadyCheck(BaseModel):
@@ -198,6 +231,17 @@ class FeedbackResponse(BaseModel):
     """Response from POST /feedback."""
 
     success: bool = Field(description="True if the score was submitted to Langfuse")
+
+
+class CostsResponse(BaseModel):
+    """Response from GET /admin/costs."""
+
+    window: str = Field(description="Lookback window echoed from the query param")
+    total_requests: int = Field(description="Requests in the window")
+    cache_hits: int = Field(description="Requests served from cache in the window")
+    total_input_tokens: int = Field(description="Sum of prompt tokens in the window")
+    total_output_tokens: int = Field(description="Sum of response tokens in the window")
+    total_cost_usd: float = Field(description="Sum of estimated spend in the window")
 
 
 class ErrorResponse(BaseModel):

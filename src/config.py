@@ -19,3 +19,6 @@ class Settings(BaseSettings):
     langfuse_public_key: str = ""
     langfuse_secret_key: str = ""
     langfuse_host: str = "https://cloud.langfuse.com"
+    redis_url: str = ""
+    cache_ttl_seconds: int = 3600
+    semantic_similarity_threshold: float = 0.95

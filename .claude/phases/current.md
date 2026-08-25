@@ -1,10 +1,24 @@
 # Current phase
 
-**Phase 5 — Evaluation pipeline**
+**Phase 6 — Semantic caching + cost tracking**
 
-Active phase file: `.claude/phases/phase-5.md`
+Active phase file: `.claude/phases/phase-6.md`
 
-Progress: 7 of 7 features complete. Phase 5 done.
+Progress: 7 of 7 features complete. Phase 6 done.
+
+- [x] 36 redis-setup
+- [x] 37 exact-match-cache
+- [x] 38 semantic-cache
+- [x] 39 cache-metrics
+- [x] 40 token-accounting
+- [x] 41 cost-logging
+- [x] 42 admin-cost-endpoint
+
+---
+
+## Phase 5 — complete
+
+All 7 features shipped. `LEARNINGS.md` to be updated by human before closing out.
 
 - [x] 29 golden-dataset
 - [x] 30 ragas-integration
@@ -13,8 +27,6 @@ Progress: 7 of 7 features complete. Phase 5 done.
 - [x] 33 pytest-eval-suite
 - [x] 34 nightly-eval-job
 - [x] 35 regression-detection
-- [ ] 34 nightly-eval-job
-- [ ] 35 regression-detection
 
 ---
 ## Phase 4 — complete

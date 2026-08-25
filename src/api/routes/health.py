@@ -10,9 +10,10 @@ router = APIRouter()
 
 
 @router.get("/health", response_model=HealthResponse)
-def health() -> HealthResponse:
+def health(request: Request) -> HealthResponse:
     """Liveness probe — confirms the process is running."""
-    return HealthResponse(status="ok")
+    redis_status = getattr(request.app.state, "redis_status", "error: not initialised")
+    return HealthResponse(status="ok", redis=redis_status)
 
 
 @router.get("/ready")
