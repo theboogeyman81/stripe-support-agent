@@ -1,10 +1,26 @@
 # Current phase
 
-**Phase 6 — Semantic caching + cost tracking**
+**Phase 7 — Guardrails + fallback chains**
 
-Active phase file: `.claude/phases/phase-6.md`
+Active phase file: `.claude/phases/phase-7.md`
 
-Progress: 7 of 7 features complete. Phase 6 done.
+Progress: 0 of 9 features complete.
+
+- [x] 43 input-pii-redaction
+- [x] 44 input-prompt-injection
+- [x] 45 input-off-topic
+- [x] 46 output-hallucination-check
+- [x] 47 output-safety-filter
+- [ ] 48 output-citation-enforcement
+- [ ] 49 model-fallback-chain
+- [ ] 50 circuit-breaker
+- [ ] 51 graceful-degradation-ux
+
+---
+
+## Phase 6 — complete
+
+All 7 features shipped. `LEARNINGS.md` to be updated by human before closing out.
 
 - [x] 36 redis-setup
 - [x] 37 exact-match-cache
@@ -13,20 +29,6 @@ Progress: 7 of 7 features complete. Phase 6 done.
 - [x] 40 token-accounting
 - [x] 41 cost-logging
 - [x] 42 admin-cost-endpoint
-
----
-
-## Phase 5 — complete
-
-All 7 features shipped. `LEARNINGS.md` to be updated by human before closing out.
-
-- [x] 29 golden-dataset
-- [x] 30 ragas-integration
-- [x] 31 llm-as-judge
-- [x] 32 retrieval-eval
-- [x] 33 pytest-eval-suite
-- [x] 34 nightly-eval-job
-- [x] 35 regression-detection
 
 ---
 ## Phase 4 — complete
