@@ -11,6 +11,7 @@ from src.cache.metrics import (
     increment,
 )
 from src.cache.semantic import semantic_search, semantic_store
+from src.guardrails.citation import enforce_citation
 from src.guardrails.hallucination import UNGROUNDED_FALLBACK, check_grounding
 from src.guardrails.off_topic import classify_topic
 from src.guardrails.pii_redaction import redact_pii
@@ -111,7 +112,12 @@ def ask(body: AskRequest, request: Request) -> AskResponse:
             seen_urls.add(chunk["doc_url"])
             sources.append(SourceItem(title=chunk["doc_title"], url=chunk["doc_url"]))
 
-    # Semantic cache store — only for safe and grounded answers
+    if not enforce_citation(result["answer"], sources):
+        print("[WARNING] Uncited answer (empty sources), replacing with fallback")
+        result["answer"] = UNGROUNDED_FALLBACK
+        cache_answer = False
+
+    # Semantic cache store — only for safe, grounded, and cited answers
     if redis_client is not None and embedder is not None and cache_answer:
         semantic_store(
             redis_client,
