@@ -11,8 +11,8 @@ Progress: 0 of 9 features complete.
 - [x] 45 input-off-topic
 - [x] 46 output-hallucination-check
 - [x] 47 output-safety-filter
-- [ ] 48 output-citation-enforcement
-- [ ] 49 model-fallback-chain
+- [x] 48 output-citation-enforcement
+- [x] 49 model-fallback-chain
 - [ ] 50 circuit-breaker
 - [ ] 51 graceful-degradation-ux
 
