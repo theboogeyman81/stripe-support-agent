@@ -64,6 +64,23 @@ class AskResponse(BaseModel):
     output_tokens: int = Field(description="Tokens in the LLM response")
     cost_usd: float = Field(description="Estimated USD cost of the LLM call")
     cache_hit: bool = Field(False, description="True if answer was served from cache")
+    degraded: bool = Field(
+        False,
+        description=(
+            "True when a guardrail replaced the answer or a fallback model was used"
+        ),
+    )
+    degradation_reason: str | None = Field(
+        None,
+        description=(
+            "First degradation cause: 'unsafe_output', 'ungrounded', "
+            "'uncited', 'model_fallback', 'service_unavailable'"
+        ),
+    )
+    fallback_level: int = Field(
+        0,
+        description="Model tier used: 0=primary, 1=secondary, 2=apology",
+    )
 
 
 class IngestRequest(BaseModel):
