@@ -1,6 +1,6 @@
 """POST /ask route — retrieves chunks and generates a Gemini answer."""
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Response
 
 from src.api.schemas import AskRequest, AskResponse, SourceItem
 from src.cache.metrics import (
@@ -24,7 +24,7 @@ router = APIRouter()
 
 
 @router.post("/ask", response_model=AskResponse)
-def ask(body: AskRequest, request: Request) -> AskResponse:
+def ask(body: AskRequest, request: Request, response: Response) -> AskResponse:
     """Retrieve relevant chunks and generate a grounded answer."""
     redis_client = getattr(request.app.state, "redis_client", None)
     embedder = getattr(request.app.state, "embedder", None)
@@ -89,10 +89,13 @@ def ask(body: AskRequest, request: Request) -> AskResponse:
         else:
             increment(redis_client, EXACT_MISSES)
 
+    degradation_reason: str | None = None
+
     safety = check_safety(result["answer"])
     if not safety.is_safe:
         print(f"[WARNING] Unsafe output detected: category={safety.reason}")
         result["answer"] = UNSAFE_FALLBACK
+        degradation_reason = "unsafe_output"
 
     cache_answer = safety.is_safe
     if safety.is_safe:
@@ -103,6 +106,8 @@ def ask(body: AskRequest, request: Request) -> AskResponse:
                 f"(overlap={grounding.overlap_score:.2f}), replacing with fallback"
             )
             result["answer"] = UNGROUNDED_FALLBACK
+            if degradation_reason is None:
+                degradation_reason = "ungrounded"
         cache_answer = grounding.is_grounded
 
     seen_urls: set[str] = set()
@@ -116,6 +121,16 @@ def ask(body: AskRequest, request: Request) -> AskResponse:
         print("[WARNING] Uncited answer (empty sources), replacing with fallback")
         result["answer"] = UNGROUNDED_FALLBACK
         cache_answer = False
+        if degradation_reason is None:
+            degradation_reason = "uncited"
+
+    fallback_level = result.get("fallback_level", 0)
+    if fallback_level == 2:
+        response.headers["Retry-After"] = "60"
+        if degradation_reason is None:
+            degradation_reason = "service_unavailable"
+    elif fallback_level == 1 and degradation_reason is None:
+        degradation_reason = "model_fallback"
 
     # Semantic cache store — only for safe, grounded, and cited answers
     if redis_client is not None and embedder is not None and cache_answer:
@@ -140,4 +155,7 @@ def ask(body: AskRequest, request: Request) -> AskResponse:
         output_tokens=result["output_tokens"],
         cost_usd=result["cost_usd"],
         cache_hit=result.get("cache_hit", False),
+        degraded=degradation_reason is not None,
+        degradation_reason=degradation_reason,
+        fallback_level=fallback_level,
     )
